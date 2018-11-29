@@ -12,18 +12,19 @@ var {User} = require('./models/user');
 var app = express();
 const port = process.env.PORT || 3000;
 
-// var countGlobal = 0;
-//
-Todo.count({}, (err, count) => {
-  if(err){
-    console.log(err);
-  } else {
-    console.log(`Total of todos ${count}`);
-  }
-});
+// Todo.count({}, (err, count) => {
+//   if(err){
+//     console.log(err);
+//   } else {
+//     console.log(`Total of todos ${count}`);
+//   }
+// });
 
 app.use(bodyParser.json());
 
+debugger;
+
+//Todos Routes
 app.post('/todos', (req, res) => {
   var todo = new Todo({
     text: req.body.text
@@ -55,15 +56,6 @@ app.get('/todos/:id', (req, res) => {
        res.status(400).send();
    });
 });
-//
-// app.delete('/todos/all/', (req, res) => {
-//    Todo.remove({}).then((result) => {
-//      console.log(`${result.result.n} todos deleted`);
-//      res.status(200).send();
-//    }).catch((e) => {
-//       res.status(404).send();
-//    });
-// });
 
 app.delete('/todos/:id', (req, res) => {
    var id = req.params.id;
@@ -97,6 +89,20 @@ app.patch('/todos/:id', (req, res) => {
     res.status(400).send();
   });
 })
+
+//Users Routes
+app.post('/users', (req, res) => {
+  var body = _.pick(req.body, ['email','password']);
+  var user = new User(body);
+  user.save().then(() => {
+    return user.generateAuthToken();
+  }).then((token) => {
+    console.log(token);
+    res.header('x-auth', token).send(user);
+  }).catch((e) => {
+    res.status(400).send(e);
+  });
+});
 
 app.listen(port, () => {
   console.log(`Started up on port ${port}`);
