@@ -1,4 +1,5 @@
 const {User} = require('./../models/user');
+const bcrypt = require('bcryptjs');
 
 var authenticate = (req, res, next) => {
   var token = req.header('x-auth');
@@ -12,6 +13,20 @@ var authenticate = (req, res, next) => {
   }).catch((e) => {
     res.status(401).send();
   });
-}
+};
 
-module.exports = {authenticate};
+var logon = (req, res, next) => {
+  var email = req.body.email;
+  var password = req.body.password;
+  User.findByCredentials(email, password).then((user) =>{
+    user.generateAuthToken().then((token) => {
+      req.user = user;
+      req.token = token;
+      next();
+    });
+  }).catch((e) =>{
+    res.status(401).send();
+  });
+};
+
+module.exports = {authenticate, logon};
